@@ -58,6 +58,9 @@ const Form = () => {
 
       console.log(response_create_get);
 
+      window.open("https://dial.to/?action=solana-action:" + 'http://localhost:8000/router_get/' + response.data.id + '/' + response.data.file + '/' + response.data.title + '/' + response.data.description, "_blank");
+      window.location.reload();
+
     } catch (error) {
       console.log(error)
       setSubmissionMessage('Internal error, try again later');
