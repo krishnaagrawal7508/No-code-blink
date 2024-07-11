@@ -75,14 +75,14 @@ const Form = () => {
       <input
         type="text"
         className="form-title"
-        placeholder="Form Title"
+        placeholder="Title"
         name="title"
         value={formData.title}
         onChange={handleInputChange}
       />
       <textarea
         className="form-description"
-        placeholder="Detailed description about the form"
+        placeholder="Description"
         name="description"
         value={formData.description}
         onChange={handleInputChange}
@@ -94,7 +94,7 @@ const Form = () => {
             <span className="loader"></span>
           </>
         ) : (
-          'Send it'
+          'Create blink'
         )}
       </button>
       {submissionMessage && <span style={{ color: 'green', padding: '10px' }}>{submissionMessage}<span className="loader"></span></span>}
