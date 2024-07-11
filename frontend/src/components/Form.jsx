@@ -48,60 +48,56 @@ const Form = () => {
 
       setSubmissionMessage('Your Blink is being created');
 
-      const response_create_get = await axios.get('http://localhost:8000/router_get/' + response.data.id, {
-        params: {
-          "title": response.data.title,
-          "description": response.data.description,
-          "image": response.data.file,
+      const response_create_get = await axios.get('http://localhost:8000/router_get/' + response.data.id + '/' + response.data.file + '/' + response.data.title + '/' + response.data.description,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
         }
-      }, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      });
+      );
 
-console.log(response_create_get);
+      console.log(response_create_get);
 
     } catch (error) {
-  console.log(error)
-  setSubmissionMessage('Internal error, try again later');
-} finally {
-  setIsSubmitting(false);
-}
+      console.log(error)
+      setSubmissionMessage('Internal error, try again later');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-return (
-  <form className="form" onSubmit={send} encType="multipart/form-data">
-    <UploadCover onFileSelect={handleFileSelect} />
-    <input
-      type="text"
-      className="form-title"
-      placeholder="Form Title"
-      name="title"
-      value={formData.title}
-      onChange={handleInputChange}
-    />
-    <textarea
-      className="form-description"
-      placeholder="Detailed description about the form"
-      name="description"
-      value={formData.description}
-      onChange={handleInputChange}
-    />
-    <button type="submit" className="submit-btn" disabled={isSubmitting}>
-      {isSubmitting ? (
-        <>
-          <span>Submitting...</span>
-          <span className="loader"></span>
-        </>
-      ) : (
-        'Send it'
-      )}
-    </button>
-    {submissionMessage && <span style={{ color: 'green', padding: '10px' }}>{submissionMessage}<span className="loader"></span></span>}
+  return (
+    <form className="form" onSubmit={send} encType="multipart/form-data">
+      <UploadCover onFileSelect={handleFileSelect} />
+      <input
+        type="text"
+        className="form-title"
+        placeholder="Form Title"
+        name="title"
+        value={formData.title}
+        onChange={handleInputChange}
+      />
+      <textarea
+        className="form-description"
+        placeholder="Detailed description about the form"
+        name="description"
+        value={formData.description}
+        onChange={handleInputChange}
+      />
+      <button type="submit" className="submit-btn" disabled={isSubmitting}>
+        {isSubmitting ? (
+          <>
+            <span>Submitting...</span>
+            <span className="loader"></span>
+          </>
+        ) : (
+          'Send it'
+        )}
+      </button>
+      {submissionMessage && <span style={{ color: 'green', padding: '10px' }}>{submissionMessage}<span className="loader"></span></span>}
 
-  </form>
-);
+    </form>
+  );
 };
 
 export default Form;
