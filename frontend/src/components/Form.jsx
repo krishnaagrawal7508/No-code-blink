@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import UploadCover from './UploadCover';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 
 const Form = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -10,6 +11,9 @@ const Form = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionMessage, setSubmissionMessage] = useState('');
+
+  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
 
   const handleFileSelect = (file) => {
     setSelectedFile(file);
@@ -25,6 +29,10 @@ const Form = () => {
 
   const send = async (e) => {
     e.preventDefault();
+
+    if (!connection || !publicKey) {
+      return;
+    }
 
     if (!selectedFile) {
       alert('Please select an image to upload.');
@@ -70,36 +78,38 @@ const Form = () => {
   };
 
   return (
-    <form className="form" onSubmit={send} encType="multipart/form-data">
-      <UploadCover onFileSelect={handleFileSelect} />
-      <input
-        type="text"
-        className="form-title"
-        placeholder="Title"
-        name="title"
-        value={formData.title}
-        onChange={handleInputChange}
-      />
-      <textarea
-        className="form-description"
-        placeholder="Description"
-        name="description"
-        value={formData.description}
-        onChange={handleInputChange}
-      />
-      <button type="submit" className="submit-btn" disabled={isSubmitting}>
-        {isSubmitting ? (
-          <>
-            <span>Submitting...</span>
-            <span className="loader"></span>
-          </>
-        ) : (
-          'Create blink'
-        )}
-      </button>
-      {submissionMessage && <span style={{ color: 'green', padding: '10px' }}>{submissionMessage}<span className="loader"></span></span>}
+    publicKey ?
+      <form className="form" onSubmit={send} encType="multipart/form-data">
+        <UploadCover onFileSelect={handleFileSelect} />
+        <input
+          type="text"
+          className="form-title"
+          placeholder="Title"
+          name="title"
+          value={formData.title}
+          onChange={handleInputChange}
+        />
+        <textarea
+          className="form-description"
+          placeholder="Description"
+          name="description"
+          value={formData.description}
+          onChange={handleInputChange}
+        />
+        <button type="submit" className="submit-btn" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <>
+              <span>Submitting...</span>
+              <span className="loader"></span>
+            </>
+          ) : (
+            'Create blink'
+          )}
+        </button>
+        {submissionMessage && <span style={{ color: 'green', padding: '10px' }}>{submissionMessage}<span className="loader"></span></span>}
 
-    </form>
+      </form> :
+      <span>Connect your wallet</span>
   );
 };
 

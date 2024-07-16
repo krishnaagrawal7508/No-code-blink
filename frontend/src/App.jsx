@@ -1,17 +1,20 @@
 import React from 'react';
 import Header from './components/Header';
 import ProgressDots from './components/ProgressDots';
-import UploadCover from './components/UploadCover';
 import Form from './components/Form';
+import WalletContextProvider from './components/WalletContextProvider';
+
 
 function App() {
   return (
     <div className="container">
-      <Header />
-      <main>
-        <ProgressDots />
-        <Form />
-      </main>
+      <WalletContextProvider>
+        <Header />
+        <main>
+          <ProgressDots />
+          <Form />
+        </main>
+      </WalletContextProvider>
     </div>
   );
 }
