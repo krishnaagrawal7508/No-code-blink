@@ -2,19 +2,19 @@ import React from 'react';
 import Header from './components/Header';
 import ProgressDots from './components/ProgressDots';
 import Form from './components/Form';
-import WalletContextProvider from './components/WalletContextProvider';
+// import WalletContextProvider from './components/WalletContextProvider';
 
 
 function App() {
   return (
     <div className="container">
-      <WalletContextProvider>
+      {/* <WalletContextProvider> */}
         <Header />
         <main>
           <ProgressDots />
           <Form />
         </main>
-      </WalletContextProvider>
+      {/* </WalletContextProvider> */}
     </div>
   );
 }
