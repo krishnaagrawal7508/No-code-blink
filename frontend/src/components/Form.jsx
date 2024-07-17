@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import UploadCover from './UploadCover';
 // import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { Buffer } from 'buffer';
 
 const Form = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -56,7 +57,17 @@ const Form = () => {
 
       setSubmissionMessage('Your Blink is being created');
 
-      const response_create_get = await axios.get('http://localhost:8000/router_get/' + response.data.id + '/' + response.data.file + '/' + response.data.title + '/' + response.data.description,
+      let json = {
+        "id": response.data.id,
+        "icon": response.data.file,
+        "title": response.data.title,
+        "description": response.data.description
+      };
+
+      const jsonstring = JSON.stringify(json);
+      const encoded = Buffer.from(jsonstring).toString('base64')
+
+      const response_create_get = await axios.get('http://localhost:8000/router_get/' + encodeURIComponent(encoded),
         {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -66,7 +77,7 @@ const Form = () => {
 
       console.log(response_create_get);
 
-      window.open("https://dial.to/?action=solana-action:" + 'http://localhost:8000/router_get/' + response.data.id + '/' + response.data.file + '/' + response.data.title + '/' + response.data.description, "_blank");
+      window.open("https://dial.to/?action=solana-action:" + 'http://localhost:8000/router_get/' + encodeURIComponent(encoded), "_blank");
       window.location.reload();
 
     } catch (error) {

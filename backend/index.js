@@ -3,6 +3,7 @@ const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
 const url = require('url');
+const Buffer = require('buffer').Buffer;
 
 const app = express();
 const port = 8000;
@@ -63,21 +64,22 @@ app.options("/*", function (req, res, next) {
   res.send(200);
 });
 
-app.get('/router_get/:id/:icon/:title/:description', (req, res) => {
-  let name = "ranadom";
+app.get('/router_get/:encoded', (req, res) => {
+  let name = "";
   let obj = {}
+  
+  const json = Buffer.from(req.params.encoded, "base64").toString();
+  const decoded = JSON.parse(json)
 
-  // obj.icon = new URL("/uploads/" + req.params.image);
-  let id = req.params.id;
+  let id = decoded.id;
 
   const baseUrl = `${req.protocol}://${req.get('host')}`;
-  const imageUrl = new url.URL('/uploads/'+ req.params.icon, baseUrl).toString();
+  const imageUrl = new url.URL('/uploads/'+ decoded.icon, baseUrl).toString();
   console.log(imageUrl);
   obj.icon = imageUrl;
-  console.log(obj.icon);
   
-  obj.title = req.params.title;
-  obj.description = req.params.description;
+  obj.title = decoded.title;
+  obj.description = decoded.description;
 
   console.log("here!!")
   obj.links = {
