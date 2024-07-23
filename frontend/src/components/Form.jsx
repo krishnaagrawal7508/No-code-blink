@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Buffer } from 'buffer';
 
 let id = 1;
@@ -14,8 +14,8 @@ const Form = () => {
   const [submissionMessage, setSubmissionMessage] = useState('');
   const [isFormValid, setIsFormValid] = useState(false);
 
-  // const { publicKey, sendTransaction } = useWallet();
-  // const { connection } = useConnection();
+  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
   const [fields, setFields] = useState([
     { id: 1, type: 'text', placeholder: 'Field 1', value: '' },
     { id: 2, type: 'text', placeholder: 'Field 2', value: '' },
@@ -56,9 +56,9 @@ const Form = () => {
   const send = async (e) => {
     e.preventDefault();
 
-    // if (!connection || !publicKey) {
-    //   return;
-    // }
+    if (!connection || !publicKey) {
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -73,7 +73,8 @@ const Form = () => {
         "id": id,
         "title": formData.title,
         "description": formData.description,
-        "fields": fields
+        "fields": fields,
+        "wallet": publicKey
       };
 
       const jsonstring = JSON.stringify(json);
@@ -103,7 +104,7 @@ const Form = () => {
   };
 
   return (
-    // publicKey ?
+    publicKey ?
     <form className="form" onSubmit={send} encType="multipart/form-data">
       <input
         type="text"
@@ -158,7 +159,7 @@ const Form = () => {
       {submissionMessage && <span style={{ color: 'green', padding: '10px' }}>{submissionMessage}<span className="loader"></span></span>}
 
     </form>
-    // :<span>Connect your wallet</span>
+    :<span>Connect your wallet</span>
   );
 };
 

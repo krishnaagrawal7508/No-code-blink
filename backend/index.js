@@ -49,6 +49,9 @@ app.get('/router_get/:encoded', (req, res) => {
   const fields = decoded.fields;
   console.log(fields)
 
+  const address = decoded.wallet;
+  console.log(address);
+
   const convertedFields = fields.map(field => ({
     name: field.value,
     label: field.value
@@ -62,7 +65,7 @@ app.get('/router_get/:encoded', (req, res) => {
     "actions": [
       {
         "label": "Send",
-        "href": "http://localhost:8000/router_post/" + id,
+        "href": "http://localhost:8000/router_post/" + address,
         "parameters": convertedFields
       }
     ]
@@ -70,6 +73,10 @@ app.get('/router_get/:encoded', (req, res) => {
 
   res.send(JSON.stringify(obj));
 });
+
+app.post("/roter_post/:address", (req, res) => {
+
+})
 
 app.get("/actions.json", (req, res) => {
   if (server_host == "http://localhost:8000/") {
