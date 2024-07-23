@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import UploadCover from './UploadCover';
 // import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Buffer } from 'buffer';
 
+let id = 1;
+
 const Form = () => {
-  const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     description: ''
@@ -35,10 +35,6 @@ const Form = () => {
     setFields(fields.filter(field => field.id !== id));
   };
 
-  const handleFileSelect = (file) => {
-    setSelectedFile(file);
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -54,8 +50,8 @@ const Form = () => {
   useEffect(() => {
     const isFormDataValid = formData.title.trim() !== '' && formData.description.trim() !== '';
     const areFieldsValid = fields.every(field => field.value.trim() !== '');
-    setIsFormValid(isFormDataValid && areFieldsValid && selectedFile !== null);
-  }, [formData, fields, selectedFile]);
+    setIsFormValid(isFormDataValid && areFieldsValid !== null);
+  }, [formData, fields]);
 
   const send = async (e) => {
     e.preventDefault();
@@ -64,33 +60,19 @@ const Form = () => {
     //   return;
     // }
 
-    if (!selectedFile) {
-      alert('Please select an image to upload.');
-      return;
-    }
-
     setIsSubmitting(true);
 
     const form = new FormData();
-    form.append('coverImage', selectedFile);
     form.append('title', formData.title);
     form.append('description', formData.description);
 
     try {
-      const response = await axios.post('http://localhost:8000/upload', form, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      console.log(response);
-
       setSubmissionMessage('Your Blink is being created');
 
       let json = {
-        "id": response.data.id,
-        "icon": response.data.file,
-        "title": response.data.title,
-        "description": response.data.description,
+        "id": id,
+        "title": formData.title,
+        "description": formData.description,
         "fields": fields
       };
 
@@ -107,6 +89,8 @@ const Form = () => {
 
       console.log(response_create_get);
 
+      id++;
+
       window.open("https://dial.to/?action=solana-action:" + 'http://localhost:8000/router_get/' + encodeURIComponent(encoded), "_blank");
       window.location.reload();
 
@@ -121,7 +105,6 @@ const Form = () => {
   return (
     // publicKey ?
     <form className="form" onSubmit={send} encType="multipart/form-data">
-      <UploadCover onFileSelect={handleFileSelect} />
       <input
         type="text"
         className="form-title"

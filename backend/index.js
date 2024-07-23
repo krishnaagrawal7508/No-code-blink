@@ -13,41 +13,6 @@ app.use(cors());
 
 app.use("/uploads", express.static("uploads"))
 
-// Set up storage using multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Directory to save the uploaded files
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`); // Save the file with a timestamp prefix
-  },
-});
-
-const upload = multer({ storage });
-
-// Create uploads directory if not exists
-const fs = require('fs');
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync('uploads');
-}
-
-// Handle file upload
-let id = 1;
-app.post('/upload', upload.single('coverImage'), (req, res) => {
-  const { title, description } = req.body;
-  console.log(req.body, req.file.filename);
-
-  ++id;
-
-  res.send({
-    message: 'File uploaded successfully',
-    id: id,
-    file: req.file.filename,
-    title: title,
-    description: description,
-  });
-});
-
 app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Encoding, Accept-Encoding');
@@ -74,7 +39,7 @@ app.get('/router_get/:encoded', (req, res) => {
   let id = decoded.id;
 
   const baseUrl = `${req.protocol}://${req.get('host')}`;
-  const imageUrl = new url.URL('/uploads/' + decoded.icon, baseUrl).toString();
+  const imageUrl = new url.URL('/uploads/BlinkForms_sq.png', baseUrl).toString();
   console.log(imageUrl);
   obj.icon = imageUrl;
 
