@@ -151,7 +151,7 @@ const Form = () => {
         </div>
       ))}
 
-      <button type="button" onClick={addField} style={{ backgroundColor: '#e0e0e0', width: '100%', padding: '8px', borderRadius: '4px' }}>➕ Add input field</button>
+      <button type="button" onClick={addField} style={{ backgroundColor: '#e0e0e0', width: '100%', padding: '8px', borderRadius: '4px', marginBottom: '7%', marginTop: "2%" }}>➕ Add input field</button>
 
       <button
         type="submit"
