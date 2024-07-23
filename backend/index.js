@@ -67,26 +67,38 @@ app.options("/*", function (req, res, next) {
 app.get('/router_get/:encoded', (req, res) => {
   let name = "";
   let obj = {}
-  
+
   const json = Buffer.from(req.params.encoded, "base64").toString();
   const decoded = JSON.parse(json)
 
   let id = decoded.id;
 
   const baseUrl = `${req.protocol}://${req.get('host')}`;
-  const imageUrl = new url.URL('/uploads/'+ decoded.icon, baseUrl).toString();
+  const imageUrl = new url.URL('/uploads/' + decoded.icon, baseUrl).toString();
   console.log(imageUrl);
   obj.icon = imageUrl;
-  
+
   obj.title = decoded.title;
   obj.description = decoded.description;
 
+  const fields = decoded.fields;
+  console.log(fields)
+
+  const convertedFields = fields.map(field => ({
+    name: field.value,
+    label: field.value
+  }));
+
+  console.log(convertedFields)
+
   console.log("here!!")
+
   obj.links = {
     "actions": [
       {
         "label": "Send",
         "href": "http://localhost:8000/router_post/" + id,
+        "parameters": convertedFields
       }
     ]
   }
@@ -95,14 +107,14 @@ app.get('/router_get/:encoded', (req, res) => {
 });
 
 app.get("/actions.json", (req, res) => {
-  if (server_host == "http://localhost:8000/" ) {
+  if (server_host == "http://localhost:8000/") {
     let rules = {
       "rules": [{
         "pathPattern": "/spl/*",
-        "apiPath": "http://localhost:8000/" 
+        "apiPath": "http://localhost:8000/"
       }]
     };
-    res.send(JSON.stringify(rules), {headers: ACTIONS_CORS_HEADERS});
+    res.send(JSON.stringify(rules), { headers: ACTIONS_CORS_HEADERS });
   }
 });
 
