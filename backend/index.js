@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const url = require('url');
 const Buffer = require('buffer').Buffer;
+import mcbuild from './src/mcbuild.js';
 
 const app = express();
 const port = 8000;
@@ -30,7 +31,7 @@ app.options("/*", function (req, res, next) {
 });
 
 app.get('/', (req, res) => {
-  res.send("Working");
+  res.send("Server is UP!");
 })
 
 app.get('/router_get/:encoded', (req, res) => {
@@ -68,7 +69,7 @@ app.get('/router_get/:encoded', (req, res) => {
     "actions": [
       {
         "label": "Send",
-        "href": "https://blink-forms.vercel.app/router_post/" + address,
+        "href": "https://blink-forms.vercel.app/router_post/" + req.params.encoded,
         "parameters": convertedFields
       }
     ]
@@ -77,9 +78,63 @@ app.get('/router_get/:encoded', (req, res) => {
   res.send(JSON.stringify(obj));
 });
 
-app.post("/roter_post/:address", (req, res) => {
+app.post("/roter_post/:encoded", async function (req, res) {
 
-})
+  const json = Buffer.from(req.params.encoded, "base64").toString();
+  const decoded = JSON.parse(json);
+
+
+  const MINT_ADDRESS = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"); // usdc mint address
+  const TO_WALLET = new PublicKey(decoded.wallet);
+  const SOLANA_CONNECTION = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
+  const FROM_WALLET = new PublicKey(req.body.account);
+  const lamportsToSend = 10;
+
+  const transferTransaction = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: fromKeypair.publicKey,
+      toPubkey: toKeypair.publicKey,
+      lamports: lamportsToSend,
+    })
+  );
+
+  await transferTransaction.add(
+    new TransactionInstruction({
+      keys: [
+        { pubkey: fromKeypair.publicKey, isSigner: true, isWritable: true },
+      ],
+      data: Buffer.from("Data to send in transaction", "utf-8"),
+      programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+    })
+  );
+
+  // check if the recipient wallet needs a usdc ata
+  let createATA = false;
+  await splToken.getAccount(SOLANA_CONNECTION, toTokenAccount, 'confirmed', splToken.TOKEN_PROGRAM_ID)
+    .then(function (response) { createATA = false; })
+    .catch(function (error) {
+      if (error.name == "TokenAccountNotFoundError") { createATA = true }
+      else { return; }
+    });
+
+
+  // build transaction
+  let _tx_ = {};
+  _tx_.rpc = "https://api.devnet.solana.com";
+  _tx_.account = req.body.account;
+  _tx_.instructions = instructions;
+  _tx_.signers = false;
+  _tx_.serialize = true;
+  _tx_.encode = true;
+  _tx_.table = false;
+  _tx_.tolerance = 1.2;
+  _tx_.compute = false;
+  _tx_.fees = false;
+  _tx_.priority = req.query.priority;
+  let tx = await mcbuild.tx(_tx_);
+  console.log(tx);
+
+});
 
 app.get("/actions.json", (req, res) => {
   if (server_host == "https://blink-forms.vercel.app/") {
