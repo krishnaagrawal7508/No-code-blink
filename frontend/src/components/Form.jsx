@@ -80,7 +80,7 @@ const Form = () => {
       const jsonstring = JSON.stringify(json);
       const encoded = Buffer.from(jsonstring).toString('base64')
 
-      const response_create_get = await axios.get('http://localhost:8000/router_get/' + encodeURIComponent(encoded),
+      const response_create_get = await axios.get('https://blink-forms.vercel.app/router_get/' + encodeURIComponent(encoded),
         {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -92,7 +92,7 @@ const Form = () => {
 
       id++;
 
-      window.open("https://dial.to/?action=solana-action:" + 'http://localhost:8000/router_get/' + encodeURIComponent(encoded), "_blank");
+      window.open("https://dial.to/?action=solana-action:" + 'https://blink-forms.vercel.app/router_get/' + encodeURIComponent(encoded), "_blank");
       window.location.reload();
 
     } catch (error) {
