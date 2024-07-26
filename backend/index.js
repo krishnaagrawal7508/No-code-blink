@@ -11,7 +11,7 @@ const port = 8000;
 // Enable CORS
 app.use(cors());
 
-app.use("/uploads", express.static("uploads"))
+app.use(express.static(__dirname + "uploads"));
 
 app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -42,8 +42,7 @@ app.get('/router_get/:encoded', (req, res) => {
 
   let id = decoded.id;
 
-  const baseUrl = `${req.protocol}://${req.get('host')}`;
-  const imageUrl = new url.URL('/uploads/BlinkForms_sq.png', baseUrl).toString();
+  const imageUrl = "https://i.postimg.cc/c4rhZ2Vx/Blink-Forms-sq.png";
   console.log(imageUrl);
   obj.icon = imageUrl;
 
@@ -69,7 +68,7 @@ app.get('/router_get/:encoded', (req, res) => {
     "actions": [
       {
         "label": "Send",
-        "href": "http://localhost:8000/router_post/" + address,
+        "href": "https://blink-forms.vercel.app/router_post/" + address,
         "parameters": convertedFields
       }
     ]
@@ -83,11 +82,11 @@ app.post("/roter_post/:address", (req, res) => {
 })
 
 app.get("/actions.json", (req, res) => {
-  if (server_host == "http://localhost:8000/") {
+  if (server_host == "https://blink-forms.vercel.app/") {
     let rules = {
       "rules": [{
         "pathPattern": "/spl/*",
-        "apiPath": "http://localhost:8000/"
+        "apiPath": "https://blink-forms.vercel.app/"
       }]
     };
     res.send(JSON.stringify(rules), { headers: ACTIONS_CORS_HEADERS });
