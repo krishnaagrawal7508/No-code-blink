@@ -6,7 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { PublicKey, Connection, Transaction, TransactionInstruction, ComputeBudgetProgram, clusterApiUrl, } from "@solana/web3.js";
 // import { SystemProgram } from "@solana/web3.js";
-import { ACTIONS_CORS_HEADERS, MEMO_PROGRAM_ID, createPostResponse} from "@solana/actions";
+import { ACTIONS_CORS_HEADERS, MEMO_PROGRAM_ID, createPostResponse } from "@solana/actions";
 
 
 const app = express();
@@ -74,7 +74,7 @@ app.get('/router_get/:encoded', (req, res) => {
     "actions": [
       {
         "label": "Send",
-        "href": "http://blink-forms.vercel.app/" + req.params.encoded,
+        "href": "https://blink-forms.vercel.app/router_post/" + req.params.encoded,
         "parameters": convertedFields
       }
     ]
@@ -95,11 +95,10 @@ app.post("/router_post/:encoded", async function (req, res) {
     account = new PublicKey(body.account);
     console.log(account)
   } catch (err) {
-    return new res.send("Invalid account", {
-      status: 400,
-      headers: ACTIONS_CORS_HEADERS,
-    });
+    return;
   }
+
+  const destinationWallet = new PublicKey(decoded.wallet);
 
   try {
     const transaction = new Transaction();
@@ -110,7 +109,7 @@ app.post("/router_post/:encoded", async function (req, res) {
       new TransactionInstruction({
         programId: new PublicKey(MEMO_PROGRAM_ID),
         data: Buffer.from("this is a simple memo message", "utf-8"),
-        keys: [],
+        keys: [{ pubkey: destinationWallet, isSigner: false, isWritable: true }],
       })
     );
 
@@ -127,11 +126,9 @@ app.post("/router_post/:encoded", async function (req, res) {
       },
     });
 
-    return res.send.json(payload, {
-      headers: ACTIONS_CORS_HEADERS,
-    });
+    return;
   } catch (err) {
-    return res.send("An error occurred", { status: 400 });
+    return;
   }
 });
 
@@ -139,7 +136,7 @@ app.get("/actions.json", (req, res) => {
   if (server_host == "https://blink-forms.vercel.app/") {
     let rules = {
       "rules": [{
-        "pathPattern": "/spl/*",
+        "pathPattern": "/*",
         "apiPath": "https://blink-forms.vercel.app/"
       }]
     };
