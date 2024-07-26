@@ -2,11 +2,11 @@
 import express from "express";
 import cors from "cors";
 import Buffer from "buffer";
-import mcbuild from './views/mcbuild.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
-// const Buffer = require('buffer').Buffer;
+import { PublicKey, Connection, Transaction, TransactionInstruction, ComputeBudgetProgram, clusterApiUrl, } from "@solana/web3.js";
+// import { SystemProgram } from "@solana/web3.js";
+import { ACTIONS_CORS_HEADERS, MEMO_PROGRAM_ID, createPostResponse} from "@solana/actions";
 
 
 const app = express();
@@ -74,13 +74,13 @@ app.get('/router_get/:encoded', (req, res) => {
     "actions": [
       {
         "label": "Send",
-        "href": "https://blink-forms.vercel.app/router_post/" + req.params.encoded,
+        "href": "http://blink-forms.vercel.app/" + req.params.encoded,
         "parameters": convertedFields
       }
     ]
   }
 
-  res.send(JSON.stringify(obj));
+  res.send(JSON.stringify(obj), { headers: ACTIONS_CORS_HEADERS });
 });
 
 app.post("/router_post/:encoded", async function (req, res) {
@@ -89,48 +89,50 @@ app.post("/router_post/:encoded", async function (req, res) {
   const decoded = JSON.parse(json);
 
 
-  const TO_WALLET = new PublicKey(decoded.wallet);
-  const SOLANA_CONNECTION = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
-  const FROM_WALLET = new PublicKey(req.body.account);
-  const lamportsToSend = 10;
+  let account;
+  try {
+    const body = await req.json();
+    account = new PublicKey(body.account);
+    console.log(account)
+  } catch (err) {
+    return new Response("Invalid account", {
+      status: 400,
+      headers: ACTIONS_CORS_HEADERS,
+    });
+  }
 
-  // const transferTransaction = new Transaction().add(
-  //   SystemProgram.transfer({
-  //     fromPubkey: FROM_WALLET,
-  //     toPubkey: TO_WALLET,
-  //     lamports: lamportsToSend,
-  //   })
-  // );
+  try {
+    const transaction = new Transaction();
+    transaction.add(
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 1000,
+      }),
+      new TransactionInstruction({
+        programId: new PublicKey(MEMO_PROGRAM_ID),
+        data: Buffer.from("this is a simple memo message", "utf-8"),
+        keys: [],
+      })
+    );
 
-  // await transferTransaction.add(
-  //   new TransactionInstruction({
-  //     keys: [
-  //       { pubkey: FROM_WALLET, isSigner: true, isWritable: true },
-  //     ],
-  //     data: Buffer.from("Data to send in transaction", "utf-8"),
-  //     programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-  //   })
-  // );
+    transaction.feePayer = account;
 
-  let donateIx = SystemProgram.transfer({fromPubkey:FROM_WALLET, lamports:lamportsToSend, toPubkey:TO_WALLET});
+    const connection = new Connection(clusterApiUrl("mainnet-beta"));
+    transaction.recentBlockhash = (
+      await connection.getLatestBlockhash()
+    ).blockhash;
 
+    const payload = await createPostResponse({
+      fields: {
+        transaction,
+      },
+    });
 
-  // build transaction
-  let _tx_ = {};
-  _tx_.rpc = "https://api.devnet.solana.com";
-  _tx_.account = FROM_WALLET;
-  _tx_.instructions = [ donateIx ];
-  _tx_.signers = false;
-  _tx_.serialize = true;
-  _tx_.encode = true;
-  _tx_.table = false;
-  _tx_.tolerance = 1.2;
-  _tx_.compute = false;
-  _tx_.fees = false;
-  _tx_.priority = req.query.priority;
-  let tx = await mcbuild.tx(_tx_);
-  console.log(tx);
-
+    return Response.json(payload, {
+      headers: ACTIONS_CORS_HEADERS,
+    });
+  } catch (err) {
+    return Response.json("An error occurred", { status: 400 });
+  }
 });
 
 app.get("/actions.json", (req, res) => {
