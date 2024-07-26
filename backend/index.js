@@ -1,10 +1,13 @@
-const express = require('express');
-const multer = require('multer');
-const cors = require('cors');
-const path = require('path');
-const url = require('url');
-const Buffer = require('buffer').Buffer;
-import mcbuild from './src/mcbuild.js';
+
+import express from "express";
+import cors from "cors";
+import Buffer from "buffer";
+import mcbuild from './views/mcbuild.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// const Buffer = require('buffer').Buffer;
+
 
 const app = express();
 const port = 8000;
@@ -12,6 +15,8 @@ const port = 8000;
 // Enable CORS
 app.use(cors());
 
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
 app.use(express.static(__dirname + "uploads"));
 
 app.use(function (req, res, next) {
@@ -78,13 +83,12 @@ app.get('/router_get/:encoded', (req, res) => {
   res.send(JSON.stringify(obj));
 });
 
-app.post("/roter_post/:encoded", async function (req, res) {
+app.post("/router_post/:encoded", async function (req, res) {
 
   const json = Buffer.from(req.params.encoded, "base64").toString();
   const decoded = JSON.parse(json);
 
 
-  const MINT_ADDRESS = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"); // usdc mint address
   const TO_WALLET = new PublicKey(decoded.wallet);
   const SOLANA_CONNECTION = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
   const FROM_WALLET = new PublicKey(req.body.account);
@@ -92,8 +96,8 @@ app.post("/roter_post/:encoded", async function (req, res) {
 
   const transferTransaction = new Transaction().add(
     SystemProgram.transfer({
-      fromPubkey: fromKeypair.publicKey,
-      toPubkey: toKeypair.publicKey,
+      fromPubkey: FROM_WALLET,
+      toPubkey: TO_WALLET,
       lamports: lamportsToSend,
     })
   );
@@ -101,28 +105,19 @@ app.post("/roter_post/:encoded", async function (req, res) {
   await transferTransaction.add(
     new TransactionInstruction({
       keys: [
-        { pubkey: fromKeypair.publicKey, isSigner: true, isWritable: true },
+        { pubkey: FROM_WALLET, isSigner: true, isWritable: true },
       ],
       data: Buffer.from("Data to send in transaction", "utf-8"),
       programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
     })
   );
 
-  // check if the recipient wallet needs a usdc ata
-  let createATA = false;
-  await splToken.getAccount(SOLANA_CONNECTION, toTokenAccount, 'confirmed', splToken.TOKEN_PROGRAM_ID)
-    .then(function (response) { createATA = false; })
-    .catch(function (error) {
-      if (error.name == "TokenAccountNotFoundError") { createATA = true }
-      else { return; }
-    });
-
 
   // build transaction
   let _tx_ = {};
   _tx_.rpc = "https://api.devnet.solana.com";
-  _tx_.account = req.body.account;
-  _tx_.instructions = instructions;
+  _tx_.account = FROM_WALLET;
+  _tx_.instructions = transferTransaction;
   _tx_.signers = false;
   _tx_.serialize = true;
   _tx_.encode = true;
